@@ -4279,6 +4279,12 @@ if test "$_tremolo" = yes ; then
 	_tremor=yes
 fi
 
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists tremor; then
+	append_var TREMOR_LIBS "`$_pkgconfig --libs tremor`"
+	append_var TREMOR_CFLAGS "`$_pkgconfig --cflags tremor`"
+else
+	append_var TREMOR_LIBS "-lvorbisidec"
+fi
 if test "$_tremor" = auto ; then
 	_tremor=no
 	cat > $TMPC << EOF
@@ -4286,11 +4292,9 @@ if test "$_tremor" = auto ; then
 int main(void) { vorbis_info_init(0); return 0; }
 EOF
 	if test "$_ogg" = yes ; then
-		cc_check $TREMOR_CFLAGS $TREMOR_LIBS $OGG_CFLAGS $OGG_LIBS \
-			-lvorbisidec -logg && _tremor=yes
+		cc_check $TREMOR_CFLAGS $TREMOR_LIBS $OGG_CFLAGS $OGG_LIBS && _tremor=yes
 	else
-		cc_check $TREMOR_CFLAGS $TREMOR_LIBS -lvorbisidec && \
-		_tremor=yes
+		cc_check $TREMOR_CFLAGS $TREMOR_LIBS && _tremor=yes
 	fi
 fi
 if test "$_tremor" = yes && test "$_vorbis" = no; then
