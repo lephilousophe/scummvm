@@ -4408,16 +4408,22 @@ echo "$_mad"
 # Check for ALSA
 #
 echocheck "ALSA >= 0.9"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists alsa; then
+	append_var ALSA_LIBS "`$_pkgconfig --libs alsa`"
+	append_var ALSA_CFLAGS "`$_pkgconfig --cflags alsa`"
+else
+	append_var ALSA_LIBS "-lasound"
+fi
 if test "$_alsa" = auto ; then
 	_alsa=no
 	cat > $TMPC << EOF
 #include <alsa/asoundlib.h>
 int main(void) { return (!(SND_LIB_MAJOR==0 && SND_LIB_MINOR==9)); }
 EOF
-	cc_check $ALSA_CFLAGS $ALSA_LIBS -lasound && _alsa=yes
+	cc_check $ALSA_CFLAGS $ALSA_LIBS && _alsa=yes
 fi
 if test "$_alsa" = yes ; then
-	append_var LIBS "$ALSA_LIBS -lasound"
+	append_var LIBS "$ALSA_LIBS"
 	append_var INCLUDES "$ALSA_CFLAGS"
 fi
 define_in_config_if_yes "$_alsa" 'USE_ALSA'
