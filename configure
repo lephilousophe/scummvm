@@ -4185,6 +4185,12 @@ fi
 # Check for Ogg
 #
 echocheck "Ogg"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists ogg; then
+	append_var OGG_LIBS "`$_pkgconfig --libs ogg`"
+	append_var OGG_CFLAGS "`$_pkgconfig --cflags ogg`"
+else
+	append_var OGG_LIBS "-logg"
+fi
 if test "$_ogg" = auto ; then
 	_ogg=no
 	cat > $TMPC << EOF
@@ -4361,7 +4367,7 @@ echo "$_flac"
 
 # Add the link to ogg only after vorbis, tremor and flac as it might be used by those.
 if test "$_ogg" = yes ; then
-	append_var LIBS "$OGG_LIBS -logg"
+	append_var LIBS "$OGG_LIBS"
 	append_var INCLUDES "$OGG_CFLAGS"
 fi
 
