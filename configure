@@ -4329,6 +4329,12 @@ echo "$_opl2lpt"
 # Check for FLAC
 #
 echocheck "FLAC >= 1.0.1"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists flac; then
+	append_var FLAC_LIBS "`$_pkgconfig --libs flac`"
+	append_var FLAC_CFLAGS "`$_pkgconfig --cflags flac`"
+else
+	append_var FLAC_LIBS "-lFLAC"
+fi
 if test "$_flac" = auto ; then
 	_flac=no
 	cat > $TMPC << EOF
@@ -4341,15 +4347,13 @@ int main(void) {
 }
 EOF
 	if test "$_ogg" = yes ; then
-		cc_check $FLAC_CFLAGS $FLAC_LIBS $OGG_CFLAGS $OGG_LIBS \
-			-lFLAC -logg && _flac=yes
+		cc_check $FLAC_CFLAGS $FLAC_LIBS $OGG_CFLAGS $OGG_LIBS && _flac=yes
 	else
-		cc_check $FLAC_CFLAGS $FLAC_LIBS \
-			-lFLAC && _flac=yes
+		cc_check $FLAC_CFLAGS $FLAC_LIBS && _flac=yes
 	fi
 fi
 if test "$_flac" = yes ; then
-	append_var LIBS "$FLAC_LIBS -lFLAC"
+	append_var LIBS "$FLAC_LIBS"
 	append_var INCLUDES "$FLAC_CFLAGS"
 fi
 define_in_config_if_yes "$_flac" 'USE_FLAC'
