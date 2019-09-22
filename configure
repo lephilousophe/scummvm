@@ -4500,16 +4500,22 @@ if test "$_vorbis" = no && test "$_tremor" = no ; then
 	echo "skipping. no vorbis"
 	_theoradec=notsupported
 fi
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists theoradec; then
+	append_var THEORADEC_LIBS "`$_pkgconfig --libs theoradec`"
+	append_var THEORADEC_CFLAGS "`$_pkgconfig --cflags theoradec`"
+else
+	append_var THEORADEC_LIBS "-ltheoradec"
+fi
 if test "$_theoradec" = auto ; then
 	_theoradec=no
 	cat > $TMPC << EOF
 #include <theora/theoradec.h>
 int main(void) { th_ycbcr_buffer yuv; th_decode_ycbcr_out(NULL, yuv);  }
 EOF
-	cc_check $THEORADEC_CFLAGS $THEORADEC_LIBS -ltheoradec && _theoradec=yes
+	cc_check $THEORADEC_CFLAGS $THEORADEC_LIBS && _theoradec=yes
 fi
 if test "$_theoradec" = yes ; then
-	append_var LIBS "$THEORADEC_LIBS -ltheoradec"
+	append_var LIBS "$THEORADEC_LIBS"
 	append_var INCLUDES "$THEORADEC_CFLAGS"
 fi
 define_in_config_if_yes "$_theoradec" 'USE_THEORADEC'
