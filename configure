@@ -4433,6 +4433,12 @@ echo "$_alsa"
 # Check for libjpeg
 #
 echocheck "libjpeg >= v6b"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists libjpeg; then
+	append_var JPEG_LIBS "`$_pkgconfig --libs libjpeg`"
+	append_var JPEG_CFLAGS "`$_pkgconfig --cflags libjpeg`"
+else
+	append_var JPEG_LIBS "-ljpeg"
+fi
 if test "$_jpeg" = auto ; then
 	_jpeg=no
 	cat > $TMPC << EOF
@@ -4446,10 +4452,10 @@ int main(void) {
   return 0;
 }
 EOF
-	cc_check $JPEG_CFLAGS $JPEG_LIBS -ljpeg && _jpeg=yes
+	cc_check $JPEG_CFLAGS $JPEG_LIBS && _jpeg=yes
 fi
 if test "$_jpeg" = yes ; then
-	append_var LIBS "$JPEG_LIBS -ljpeg"
+	append_var LIBS "$JPEG_LIBS"
 	append_var INCLUDES "$JPEG_CFLAGS"
 fi
 define_in_config_if_yes "$_jpeg" 'USE_JPEG'
