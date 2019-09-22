@@ -4383,16 +4383,22 @@ fi
 # Check for MAD (MP3 library)
 #
 echocheck "MAD"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists mad; then
+	append_var MAD_LIBS "`$_pkgconfig --libs mad`"
+	append_var MAD_CFLAGS "`$_pkgconfig --cflags mad`"
+else
+	append_var MAD_LIBS "-lmad"
+fi
 if test "$_mad" = auto ; then
 	_mad=no
 	cat > $TMPC << EOF
 #include <mad.h>
 int main(void) { return 0; }
 EOF
-	cc_check $MAD_CFLAGS $MAD_LIBS -lmad && _mad=yes
+	cc_check $MAD_CFLAGS $MAD_LIBS && _mad=yes
 fi
 if test "$_mad" = yes ; then
-	append_var LIBS "$MAD_LIBS -lmad"
+	append_var LIBS "$MAD_LIBS"
 	append_var INCLUDES "$MAD_CFLAGS"
 fi
 define_in_config_if_yes "$_mad" 'USE_MAD'
