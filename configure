@@ -4617,6 +4617,12 @@ echo "$_zlib"
 # Check for LibMPEG2
 #
 echocheck "libmpeg2 >= 0.4.0"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists libmpeg2; then
+	append_var MPEG2_LIBS "`$_pkgconfig --libs libmpeg2`"
+	append_var MPEG2_CFLAGS "`$_pkgconfig --cflags libmpeg2`"
+else
+	append_var MPEG2_LIBS "-lmpeg2"
+fi
 if test "$_mpeg2" = auto ; then
 	_mpeg2=no
 	cat > $TMPC << EOF
@@ -4646,15 +4652,15 @@ EOF
 
 	if test -n "$_host"; then
 		# don't execute while cross compiling
-		cc_check $MPEG2_CFLAGS $MPEG2_LIBS -lmpeg2 && _mpeg2=yes
+		cc_check $MPEG2_CFLAGS $MPEG2_LIBS && _mpeg2=yes
 	else
-		cc_check_no_clean $MPEG2_CFLAGS $MPEG2_LIBS -lmpeg2 && $TMPO$HOSTEXEEXT && _mpeg2=yes
+		cc_check_no_clean $MPEG2_CFLAGS $MPEG2_LIBS && $TMPO$HOSTEXEEXT && _mpeg2=yes
 		cc_check_clean
 	fi
 fi
 if test "$_mpeg2" = yes ; then
 	append_var INCLUDES "$MPEG2_CFLAGS"
-	append_var LIBS "$MPEG2_LIBS -lmpeg2"
+	append_var LIBS "$MPEG2_LIBS"
 fi
 define_in_config_if_yes "$_mpeg2" 'USE_MPEG2'
 echo "$_mpeg2"
