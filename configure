@@ -4591,6 +4591,12 @@ echo "$_timidity"
 # Check for ZLib
 #
 echocheck "zlib"
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists zlib; then
+	append_var ZLIB_LIBS "`$_pkgconfig --libs zlib`"
+	append_var ZLIB_CFLAGS "`$_pkgconfig --cflags zlib`"
+else
+	append_var ZLIB_LIBS "-lz"
+fi
 if test "$_zlib" = auto ; then
 	_zlib=no
 	cat > $TMPC << EOF
@@ -4598,10 +4604,9 @@ if test "$_zlib" = auto ; then
 #include <zlib.h>
 int main(void) { return strcmp(ZLIB_VERSION, zlibVersion()); }
 EOF
-	cc_check $ZLIB_CFLAGS $ZLIB_LIBS -lz && _zlib=yes
+	cc_check $ZLIB_CFLAGS $ZLIB_LIBS && _zlib=yes
 fi
 if test "$_zlib" = yes ; then
-	append_var ZLIB_LIBS "-lz"
 	append_var LIBS "$ZLIB_LIBS"
 	append_var INCLUDES "$ZLIB_CFLAGS"
 fi
