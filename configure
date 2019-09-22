@@ -4903,24 +4903,30 @@ esac
 #
 echocheck "FluidSynth"
 
-append_var FLUIDSYNTH_LIBS "-lfluidsynth"
-case $_host_os in
-	mingw*)
-		FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -lglib-2.0 -lintl -liconv -lws2_32 -lole32 -lshlwapi -lpcre -ldsound -lwinmm"
-	;;
+if test "$_pkg_config" = "yes" && $_pkgconfig --exists fluidsynth; then
+	append_var FLUIDSYNTH_LIBS "`$_pkgconfig --libs fluidsynth`"
+	append_var FLUIDSYNTH_CFLAGS "`$_pkgconfig --cflags fluidsynth`"
+	FLUIDSYNTH_STATIC_LIBS=""
+else
+	append_var FLUIDSYNTH_LIBS "-lfluidsynth"
+	case $_host_os in
+		mingw*)
+			FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -lglib-2.0 -lintl -liconv -lws2_32 -lole32 -lshlwapi -lpcre -ldsound -lwinmm"
+		;;
 
-	darwin*)
-		FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -framework Foundation -framework CoreMIDI -framework CoreAudio -lglib-2.0 -lintl -liconv -lreadline"
-	;;
+		darwin*)
+			FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -framework Foundation -framework CoreMIDI -framework CoreAudio -lglib-2.0 -lintl -liconv -lreadline"
+		;;
 
-	iphone)
-		FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -framework Foundation -framework CoreMIDI -lglib-2.0 -lintl -liconv"
-	;;
+		iphone)
+			FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -framework Foundation -framework CoreMIDI -lglib-2.0 -lintl -liconv"
+		;;
 
-	*)
-		FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -lglib-2.0 -lintl -liconv"
-	;;
-esac
+		*)
+			FLUIDSYNTH_STATIC_LIBS="$FLUIDSYNTH_LIBS -lglib-2.0 -lintl -liconv"
+		;;
+	esac
+fi
 
 if test "$_fluidsynth" = auto; then
 	_fluidsynth=no
