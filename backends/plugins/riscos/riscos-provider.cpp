@@ -91,25 +91,90 @@ protected:
  * On 26-bit RISC OS, plugins need to be allocated in the first 64 MB
  * of RAM so that it can be executed. This may not be the case when using
  * the default allocators, which use dynamic areas for large allocations.
+ * We first try to allocate in Application Space which is now unused
+ * because we use dynamic areas.
+ * If it fails because AS is full, we fallback on the RMA space shared by
+ * all applications. This is not great but it's the only space left.
+ * TODO: Make more of an effort to free the memory in the event of a crash.
  */
-class RiscOSDLObject_AS : public RiscOSDLObject {
+class RiscOSDLObject_26bits : public RiscOSDLObject {
 protected:
+	/* We know that our pointer will be under 26-bit mark but our ptr is 32-bits
+	 * Use the high-order bit to store that we used the RMA
+	 */
+	STATIC_ASSERT(sizeof(uintptr) == 4, uintptr_must_be_32_bits);
+	static const uintptr RMA_FLAG = 0x80000000;
+
+	uintptr doAllocate(uint32 size) {
+		uintptr p = (uintptr)__stackalloc(size);
+		if (!p) {
+			// No more space in Application Space: let's take memory in RMA
+			_kernel_swi_regs regs;
+			_kernel_oserror *error;
+
+			regs.r[0] = 6;
+			regs.r[3] = size;
+
+			if ((error = _kernel_swi(OS_Module, &regs, &regs)) == NULL) {
+				p = regs.r[2];
+				if (p) {
+					p |= RMA_FLAG;
+				}
+			} else {
+				debug(8, "OS_Module failed %d (%s)", error->errnum, error->errmess);
+				p = 0;
+			}
+		}
+		return p;
+	}
+
+	void doFree(uintptr ptr) {
+		if (ptr & RMA_FLAG) {
+			ptr &= ~RMA_FLAG;
+
+			_kernel_swi_regs regs;
+
+			regs.r[0] = 7;
+			regs.r[2] = ptr;
+
+			_kernel_swi(OS_Module, &regs, &regs);
+		} else {
+			__stackfree((void *)ptr);
+		}
+
+	}
+
 	void *allocateMemory(uint32 align, uint32 size) override {
-		// Allocate with worst case alignment in application space
-		void *p = __stackalloc(size + sizeof(uintptr) + align - 1);
-		void *np = (void *)(((uintptr)p + align - 1) & (-align));
+		if (align < sizeof(uintptr)) {
+			// Make sure we are also aligned to store the uintptr in header
+			align = sizeof(uintptr);
+		}
 
-		*(uintptr *)((byte *)np + size) = (uintptr)p;
+		// Allocate with worst case alignment
+		size += sizeof(uintptr) + align - 1;
 
-		debug(8, "Allocated %p while alignment was %d: using %p", p, align, np);
+		uintptr p = doAllocate(size);
+		if (!p) {
+			// We can't allocate: fail gracefully
+			return nullptr;
+		}
 
-		return np;
+		uintptr np = (p + sizeof(uintptr) + align - 1) & ~(align -1);
+		// Clear high-order bit which stores whether we are in RMA or not
+		np &= ~RMA_FLAG;
+
+		*((uintptr *)np - 1) = p;
+
+		debug(8, "Allocated 0x%08x while alignment was %d: using %p", p, align, (void *)np);
+
+		return (void *)np;
 	}
 
 	void deallocateMemory(void *ptr, uint32 size) override {
-		void *p = (void *)*(uintptr *)((byte *)ptr + size);
-		debug(8, "Freeing %p which was allocated at %p", ptr, p);
-		__stackfree(p);
+		uintptr p = *((uintptr *)ptr - 1);
+
+		debug(8, "Freeing %p which was allocated at 0x%08x", ptr, p);
+		doFree(p);
 	}
 };
 
@@ -127,7 +192,7 @@ Plugin *RiscOSPluginProvider::createPlugin(const Common::FSNode &node) const {
 	if (_is32bit) {
 		return new TemplatedELFPlugin<RiscOSDLObject>(node.getPath());
 	} else {
-		return new TemplatedELFPlugin<RiscOSDLObject_AS>(node.getPath());
+		return new TemplatedELFPlugin<RiscOSDLObject_26bits>(node.getPath());
 	}
 }
 
