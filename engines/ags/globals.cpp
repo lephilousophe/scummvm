@@ -101,6 +101,8 @@
 
 namespace AGS3 {
 
+char data[1024*1024*5] = {1};
+
 Globals *g_globals;
 
 Globals::Globals() {
