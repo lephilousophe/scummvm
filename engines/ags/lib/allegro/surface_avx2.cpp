@@ -571,6 +571,9 @@ static void drawInner4BppWithConv(BITMAP::DrawInnerArgs &args) {
 		}
 	}
 
+	// When not scaling the last line have been copied already
+	if (!Scale) return;
+
 	// Get the last x values of the last row
 	int xCtr = xCtrStart, xCtrBpp = xCtrBppStart, destX = args.xStart;
 	// We have a picture that is a multiple of 4, so no extra pixels to draw
