@@ -26,16 +26,16 @@
 #include "graphics/blit/blit-alpha.h"
 #include "graphics/pixelformat.h"
 
-#include <arm_neon.h>
-
-#ifdef __GNUC__
-#pragma GCC push_options
-
 #if !defined(__aarch64__)
+#if defined(__clang__)
+#pragma clang attribute push (__attribute__((target("fpu=neon"))), apply_to=function)
+#elif defined(__GNUC__)
+#pragma GCC push_options
 #pragma GCC target("fpu=neon")
+#endif
 #endif // !defined(__aarch64__)
 
-#endif // __GNUC__
+#include <arm_neon.h>
 
 namespace Graphics {
 
@@ -310,8 +310,12 @@ void BlendBlit::blitNEON(Args &args, const TSpriteBlendMode &blendMode, const Al
 
 } // end of namespace Graphics
 
-#ifdef __GNUC__
+#if !defined(__aarch64__)
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
 #pragma GCC pop_options
 #endif
+#endif // !defined(__aarch64__)
 
 #endif // SCUMMVM_NEON

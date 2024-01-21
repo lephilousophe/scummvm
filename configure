@@ -6981,10 +6981,12 @@ case $_host_cpu in
 esac
 
 if test "$have_clang" = yes; then
-	# Clang is not supported yet
-	_ext_sse2=no
-	_ext_avx2=no
-	_ext_neon=no
+	# Need Clang 5.0 for pragma attribute
+	if test $_cxx_major -lt 5; then
+		_ext_sse2=no
+		_ext_avx2=no
+		_ext_neon=no
+	fi
 elif test "$have_gcc" = yes; then
 	# Need 4.9 for pragma target
 	if (test $_cxx_major -lt 4) || (test $_cxx_major -eq 4 && test $_cxx_minor -lt 9); then
