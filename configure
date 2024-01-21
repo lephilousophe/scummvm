@@ -2261,47 +2261,41 @@ if test "$have_icc" = yes; then
 	# ICC doesn't accept all gcc options, so we disable have_gcc, even if
 	# ICC does have the gcc-compatibility defines.
 	have_gcc=no
-fi
 
-if test "$have_clang" = yes; then
+	cxx_version="`( $CXX -dumpversion ) 2>/dev/null`"
+	_cxx_major="`echo "${cxx_version}" | sed -ne 's/\([0-9][0-9]*\)\..*/\1/gp'`"
+	_cxx_minor="`echo "${cxx_version}" | sed -ne 's/[0-9][0-9]*\.\([0-9][0-9]*\)/\1/gp'`"
+	cxx_version="ICC $cxx_version, ok"
+elif test "$have_clang" = yes; then
 	add_line_to_config_mk 'HAVE_CLANG = 1'
 
-	# clang does accept all gcc options we use, so we keep have_gcc
-fi
+	# clang does accept almost all gcc options we use, so we keep have_gcc
+	add_line_to_config_mk 'HAVE_GCC = 1'
 
-if test "$have_gcc" = yes; then
+	_cxx_major=`gcc_get_define __clang_major__`
+	_cxx_minor=`gcc_get_define __clang_minor__`
+	cxx_version=`gcc_get_define __clang_version__`
+	cxx_version="`echo "${cxx_version}" | sed -e 's/"\([^ ]*\) .*/\1/'`"
+	cxx_version="clang $cxx_version, ok"
+
+	append_var CXXFLAGS "-Wshadow"
+elif test "$have_gcc" = yes; then
+	# Order is important as ICC and clang mimic GCC
+	# Here is handled the pure GCC case
+
 	add_line_to_config_mk 'HAVE_GCC = 1'
 	_cxx_major=`gcc_get_define __GNUC__`
 	_cxx_minor=`gcc_get_define __GNUC_MINOR__`
 	cxx_version="`( $CXX -dumpversion ) 2>&1`"
 
-	if test "$have_clang" = yes; then
-		# Clang sets a gcc version number for compatibility.
-		# We keep that as _cxx_minor/_cxx_major for later
-		# compiler version checks.
+	cxx_version="GCC $cxx_version, ok"
 
-		# For the version reported in the configure log (cxx_version),
-		# we get the actual clang version.
-		cxx_version=`gcc_get_define __clang_version__`
-		cxx_version="`echo "${cxx_version}" | sed -e 's/"\([^ ]*\) .*/\1/'`"
-		cxx_version="clang $cxx_version, ok"
-
+	# Way too many false positives before GCC 5
+	if test $_cxx_major -ge 5; then
 		append_var CXXFLAGS "-Wshadow"
 	else
-		cxx_version="GCC $cxx_version, ok"
-
-		# Way too many false positives before GCC 5
-		if test $_cxx_major -ge 5; then
-			append_var CXXFLAGS "-Wshadow"
-		else
-			append_var CXXFLAGS "-Wno-missing-field-initializers"
-		fi
+		append_var CXXFLAGS "-Wno-missing-field-initializers"
 	fi
-elif test "$have_icc" = yes; then
-	cxx_version="`( $CXX -dumpversion ) 2>/dev/null`"
-	_cxx_major="`echo "${cxx_version}" | sed -ne 's/\([0-9][0-9]*\)\..*/\1/gp'`"
-	_cxx_minor="`echo "${cxx_version}" | sed -ne 's/[0-9][0-9]*\.\([0-9][0-9]*\)/\1/gp'`"
-	cxx_version="ICC $cxx_version, ok"
 else
 	# TODO: Big scary warning about unsupported compilers
 	cxx_version=`( $CXX -version ) 2>&1`
@@ -6986,7 +6980,12 @@ case $_host_cpu in
 		;;
 esac
 
-if test "$have_gcc" = yes; then
+if test "$have_clang" = yes; then
+	# Clang is not supported yet
+	_ext_sse2=no
+	_ext_avx2=no
+	_ext_neon=no
+elif test "$have_gcc" = yes; then
 	# Need 4.9 for pragma target
 	if (test $_cxx_major -lt 4) || (test $_cxx_major -eq 4 && test $_cxx_minor -lt 9); then
 		_ext_sse2=no
