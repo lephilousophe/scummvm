@@ -40,8 +40,8 @@ android {
         minSdkVersion 16
         targetSdkVersion 34
 
-        versionName "2.8.0"
-        versionCode 2080001
+        versionName "2.8.1.1"
+        versionCode 2081011
         // versioncode must be incremented for each market upload
 		// maximum versioncode allowed by Play Store is: 2100000000
 		// After 2.8.0 release the versioncode numbering schema changed to be more immediately helpful.
