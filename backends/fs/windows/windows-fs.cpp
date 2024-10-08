@@ -25,7 +25,7 @@
 #define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 #include "backends/fs/windows/windows-fs.h"
-#include "backends/fs/stdiostream.h"
+#include "backends/fs/windows/windows-iostream.h"
 
 bool WindowsFilesystemNode::exists() const {
 	// Check whether the file actually exists
@@ -223,11 +223,11 @@ AbstractFSNode *WindowsFilesystemNode::getParent() const {
 }
 
 Common::SeekableReadStream *WindowsFilesystemNode::createReadStream() {
-	return StdioStream::makeFromPath(getPath(), StdioStream::WriteMode_Read);
+	return WindowsIoStream::makeFromPath(getPath(), StdioStream::WriteMode_Read);
 }
 
 Common::SeekableWriteStream *WindowsFilesystemNode::createWriteStream(bool atomic) {
-	return StdioStream::makeFromPath(getPath(), atomic ?
+	return WindowsIoStream::makeFromPath(getPath(), atomic ?
 			StdioStream::WriteMode_WriteAtomic : StdioStream::WriteMode_Write);
 }
 

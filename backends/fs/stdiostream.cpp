@@ -51,19 +51,21 @@ StdioStream::~StdioStream() {
 	Common::String tmpPath(*_path);
 	tmpPath += ".tmp";
 
-	if (!rename(tmpPath.c_str(), _path->c_str())) {
-		// Success
-		delete _path;
-		return;
-	}
-
-	// Error: try to delete the file first
-	(void)remove(_path->c_str());
-	if (rename(tmpPath.c_str(), _path->c_str())) {
+	if (!moveFile(tmpPath, *_path)) {
 		warning("Couldn't save file %s", _path->c_str());
 	}
 
 	delete _path;
+}
+
+bool StdioStream::moveFile(const Common::String &src, const Common::String &dst) {
+	if (!rename(src.c_str(), dst.c_str())) {
+		return true;
+	}
+
+	// Error: try to delete the file first
+	(void)remove(dst.c_str());
+	return rename(src.c_str(), dst.c_str()) == 0;
 }
 
 bool StdioStream::err() const {

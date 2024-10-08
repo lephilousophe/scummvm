@@ -26,6 +26,8 @@
 #include "common/str.h"
 
 HRESULT SHGetFolderPathFunc(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
+// Slightly change the return type of the wrapper to get the failure code directly
+DWORD MoveFileExFunc(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags);
 
 // Helper functions
 namespace Win32 {

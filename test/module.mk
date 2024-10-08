@@ -22,6 +22,7 @@ ifdef WIN32
 TEST_LIBS += test/null_osystem.o \
 	backends/fs/windows/windows-fs-factory.o \
 	backends/fs/windows/windows-fs.o \
+	backends/fs/windows/windows-iostream.o \
 	backends/fs/abstract-fs.o \
 	backends/fs/stdiostream.o \
 	backends/modular-backend.o \

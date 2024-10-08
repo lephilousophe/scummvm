@@ -69,7 +69,7 @@ BOOL VerifyVersionInfoFunc(LPOSVERSIONINFOEXA lpVersionInformation, DWORD dwType
 HRESULT SHGetFolderPathFunc(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, LPTSTR pszPath) {
 	typedef HRESULT (WINAPI *SHGetFolderPathFunc)(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
 
-	SHGetFolderPathFunc pSHGetFolderPath = (SHGetFolderPathFunc)(void *)GetProcAddress(GetModuleHandle(TEXT("shell32.dll")), 
+	SHGetFolderPathFunc pSHGetFolderPath = (SHGetFolderPathFunc)(void *)GetProcAddress(GetModuleHandle(TEXT("shell32.dll")),
 #ifndef UNICODE
 		"SHGetFolderPathA"
 #else
@@ -92,6 +92,26 @@ HRESULT SHGetFolderPathFunc(HWND hwnd, int csidl, HANDLE hToken, DWORD dwFlags, 
 		return pSHGetSpecialFolderPath(hwnd, pszPath, csidl & ~CSIDL_FLAG_MASK, csidl & CSIDL_FLAG_CREATE) ? S_OK : E_FAIL;
 
 	return E_NOTIMPL;
+}
+
+DWORD MoveFileExFunc(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD dwFlags) {
+	typedef BOOL (WINAPI *MoveFileExFunc)(LPCTSTR lpExistingFileName, LPCTSTR lpNewFileName, DWORD  dwFlags);
+
+	MoveFileExFunc pMoveFileEx = (MoveFileExFunc)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+#ifndef UNICODE
+		"MoveFileExA"
+#else
+		"MoveFileExW"
+#endif
+	);
+	if (!pMoveFileEx)
+		return ERROR_CALL_NOT_IMPLEMENTED;
+
+	BOOL ret = pMoveFileEx(lpExistingFileName, lpNewFileName, dwFlags);
+	if (ret == 0) {
+		return ERROR_SUCCESS;
+	}
+	return GetLastError();
 }
 
 namespace Win32 {

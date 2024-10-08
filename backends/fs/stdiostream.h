@@ -43,6 +43,17 @@ protected:
 	static StdioStream *makeFromPathHelper(const Common::String &path, WriteMode writeMode,
 			StdioStream *(*factory)(void *handle));
 
+	/**
+	 * Move the file from src to dst.
+	 * This must succeed even if the destination file already exists.
+	 *
+	 * @param src The file to move
+	 * @param dst The path where the file is to be moved.
+	 *
+	 * @returns Wether the renaming succeeded or not.
+	 */
+	virtual bool moveFile(const Common::String &src, const Common::String &dst);
+
 public:
 	/**
 	 * Given a path, invokes fopen on that path and wrap the result in a
