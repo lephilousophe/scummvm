@@ -1090,7 +1090,7 @@ bool EoBCoreEngine::saveAsOriginalSaveFile(int slot) {
 		return false;
 
 	Common::FSNode nf = nd.getChild(_flags.gameID == GI_EOB1 ? "EOBDATA.SAV" : Common::String::format("EOBDATA%d.SAV", slot));
-	Common::OutSaveFile *out = new Common::OutSaveFile(nf.createWriteStream());
+	Common::OutSaveFile *out = new Common::OutSaveFile(nf.createWriteStream(true));
 
 	if (_flags.gameID == GI_EOB2) {
 		static const char tempStr[31] = "SCUMMVM EXPORT\0";

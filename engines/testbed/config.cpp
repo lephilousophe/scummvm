@@ -235,7 +235,7 @@ Common::WriteStream *TestbedConfigManager::getConfigWriteStream() const {
 	Common::WriteStream *ws;
 	Common::FSNode gameRoot(path);
 	Common::FSNode config = gameRoot.getChild(_configFileName);
-	ws = config.createWriteStream();
+	ws = config.createWriteStream(true);
 	return ws;
 }
 

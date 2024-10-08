@@ -283,7 +283,7 @@ public:
 	 *
 	 * @return Pointer to the stream object, 0 in case of a failure.
 	 */
-	SeekableWriteStream *createWriteStream(bool atomic = true) const;
+	SeekableWriteStream *createWriteStream(bool atomic /*= true*/) const;
 
 	/**
 	 * Create a directory referred by this node. This assumes that this

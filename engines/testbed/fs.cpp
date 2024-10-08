@@ -143,7 +143,7 @@ TestExitStatus FStests::testWriteFile() {
 
 	Common::FSNode fileToWrite = gameRoot.getChild("testbed.out");
 
-	Common::WriteStream *ws = fileToWrite.createWriteStream();
+	Common::WriteStream *ws = fileToWrite.createWriteStream(true);
 
 	if (!ws) {
 		Testsuite::logDetailedPrintf("Can't open writable file in game data dir\n");

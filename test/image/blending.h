@@ -748,7 +748,7 @@ OldTransparentSurface *OldTransparentSurface::scale(int16 newWidth, int16 newHei
 #ifdef TEST_IMAGE_BLENDING_SAVE
 static int save_bitmap(const char *path, const Graphics::Surface *surf) {
 	Common::FSNode fileNode(path);
-	Common::SeekableWriteStream *out = fileNode.createWriteStream();
+	Common::SeekableWriteStream *out = fileNode.createWriteStream(true);
 #ifdef SCUMM_LITTLE_ENDIAN
 	const Graphics::PixelFormat requiredFormat_3byte(3, 8, 8, 8, 0, 16, 8, 0, 0);
 #else

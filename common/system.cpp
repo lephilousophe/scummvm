@@ -238,7 +238,7 @@ Common::WriteStream *OSystem::createConfigWriteStream() {
 	return nullptr;
 #else
 	Common::FSNode file(getDefaultConfigFileName());
-	return file.createWriteStream();
+	return file.createWriteStream(true);
 #endif
 }
 

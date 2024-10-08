@@ -1202,7 +1202,7 @@ bool Debugger::cmdSave(int argc, const char **argv) {
 		return true;
 	}
 
-	Common::WriteStream *saveFile = fs.createWriteStream();
+	Common::WriteStream *saveFile = fs.createWriteStream(true);
 
 	Graphics::Surface thumbnail = _vm->generateThumbnail();
 

@@ -197,7 +197,7 @@ bool DumpFile::open(const FSNode &node) {
 		return false;
 	}
 
-	_handle = node.createWriteStream();
+	_handle = node.createWriteStream(true);
 
 	if (_handle == nullptr)
 		debug(2, "File %s not found", node.getName().c_str());

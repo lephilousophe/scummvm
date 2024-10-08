@@ -136,7 +136,7 @@ void UnitTestXObj::m_screenshot(int nargs) {
 	Common::FSNode file = screenDir.getChild(Common::String::format("%s.bmp", filenameBase.c_str()));
 #endif
 
-	Common::SeekableWriteStream *stream = file.createWriteStream();
+	Common::SeekableWriteStream *stream = file.createWriteStream(true);
 	if (!stream) {
 		warning("UnitTestXObj::m_screenshot(): could not open file %s", file.getPath().toString(Common::Path::kNativeSeparator).c_str());
 		return;

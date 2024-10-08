@@ -562,7 +562,7 @@ bool PspUnitTests::testFileSystem() {
 
 	PSP_INFO_PRINT("creating write stream...\n");
 
-	wrStream = file.createWriteStream();
+	wrStream = file.createWriteStream(true);
 	if (!wrStream) {
 		PSP_ERROR("%s couldn't be created.\n", path);
 		delete[] buffer;
@@ -654,7 +654,7 @@ bool PspUnitTests::testFileSystem() {
 
 	PSP_INFO_PRINT("writing...\n");
 
-	wrStream = file.createWriteStream();
+	wrStream = file.createWriteStream(true);
 	if (!wrStream) {
 		PSP_ERROR("%s couldn't be created.\n", path);
 		return false;

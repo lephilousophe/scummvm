@@ -470,7 +470,7 @@ void DownloadPacksDialog::clearCache() {
 		for (auto ic = iconFiles.begin(); ic != iconFiles.end(); ++ic) {
 			Common::String fname = (*ic)->getName();
 			Common::FSNode fs(iconsPath.join(fname));
-			Common::WriteStream *str = fs.createWriteStream();
+			Common::WriteStream *str = fs.createWriteStream(true);
 
 			// Overwrite previously downloaded pack files with dummy data
 			str->writeByte(0);
