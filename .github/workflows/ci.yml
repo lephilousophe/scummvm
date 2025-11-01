@@ -103,9 +103,7 @@ jobs:
           cd ../../../
       - name: Call create_project
         run: |
-          mkdir build-scummvm
-          cd build-scummvm
-          ../devtools/create_project/cmake/Debug/create_project.exe .. --msvc --vcpkg --tests ${{ matrix.configFlags }}
+          ./devtools/create_project/cmake/Debug/create_project.exe . --msvc --vcpkg --tests ${{ matrix.configFlags }}
           ls
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -119,8 +117,6 @@ jobs:
           key: vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg_installed/compiler-file-hash-cache.json', 'vcpkg_installed/status') }}
       - name: Build scummvm tests
         run: |
-          cd build-scummvm
-          ls
           msbuild scummvm-tests.sln /m /p:BuildInParallel=true /p:Configuration=${{ env.CONFIGURATION }} /p:PreferredToolArchitecture=x64 /p:Platform=${{ matrix.platform }}
   xcode:
     name: Xcode
