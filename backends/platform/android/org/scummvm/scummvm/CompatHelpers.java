@@ -568,27 +568,28 @@ class CompatHelpers {
 	}
 
 	static class LocaleCompat {
-		public static Locale buildLocale(String language) {
+		public static Locale buildLocale(String language, String country) {
 			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-				return LocaleCompatLollipop.buildLocale(language);
+				return LocaleCompatLollipop.buildLocale(language, country);
 			} else {
-				return LocaleCompatOld.buildLocale(language);
+				return LocaleCompatOld.buildLocale(language, country);
 			}
 		}
 
 		@RequiresApi(api = android.os.Build.VERSION_CODES.LOLLIPOP)
 		private static class LocaleCompatLollipop {
-			public static Locale buildLocale(String language) {
+			public static Locale buildLocale(String language, String country) {
 				Locale.Builder builder = new Locale.Builder();
 				builder.setLanguage(language);
+				builder.setRegion(country);
 				return builder.build();
 			}
 		}
 
 		@SuppressWarnings({"deprecation", "RedundantSuppression"})
 		private static class LocaleCompatOld {
-			public static Locale buildLocale(String language) {
-				return new Locale(language);
+			public static Locale buildLocale(String language, String country) {
+				return new Locale(language, country);
 			}
 		}
 	}

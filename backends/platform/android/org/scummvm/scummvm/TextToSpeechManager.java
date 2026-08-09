@@ -10,6 +10,8 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import org.scummvm.scummvm.tts.TextToSpeechClassifier;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -78,6 +80,7 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 	@RequiresApi(api = android.os.Build.VERSION_CODES.LOLLIPOP)
 	private static class Lollipop extends TextToSpeechManager {
 		protected Voice[] _voices = null;
+		TextToSpeechClassifier _classifier = null;
 
 		public Lollipop(Context context) {
 			super(context);
@@ -130,11 +133,35 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 				return l.getName().compareTo(r.getName());
 			});
 
-			String[] voicesNames = new String[_voices.length];
-			for (int i = 0; i < _voices.length; i++) {
-				voicesNames[i] = _voices[i].getName();
+			// First notify native side with unknown gender
+			{
+				String[] voicesNames = new String[_voices.length];
+				for (int i = 0; i < _voices.length; i++) {
+					voicesNames[i] = '9' + _voices[i].getName();
+				}
+				updateVoices(voicesNames);
 			}
-			updateVoices(voicesNames);
+
+			if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+				// Before Marshmallow we can't get the synthesis data
+				// Hence we cannot guess the gender
+				return;
+			}
+
+			// Don't update voices with old results
+			if (_classifier != null) {
+				_classifier.setListener(null);
+			}
+
+			long start = System.nanoTime();
+			_classifier = TextToSpeechClassifier.make(_context, _voices, (voices, genders) -> {
+				long end = System.nanoTime();
+				String[] voicesNames = new String[voices.length];
+				for (int i = 0; i < voices.length; i++) {
+					voicesNames[i] = genders[i] + voices[i].getName();
+				}
+				updateVoices(voicesNames);
+			});
 		}
 	}
 
@@ -169,7 +196,12 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 	// Called by native side
 	/** @noinspection unused */ @Keep
 	public void setLanguage(String language) {
-		_locale = CompatHelpers.LocaleCompat.buildLocale(language);
+		String country = null;
+		//language = "fr";
+		//language = "ar";
+		//language = "en"; country = "in";
+		//language = "pt"; country = "pt";
+		_locale = CompatHelpers.LocaleCompat.buildLocale(language, country);
 		if (_state.get() == STATE_BROKEN) {
 			return;
 		}

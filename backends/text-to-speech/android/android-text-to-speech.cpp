@@ -155,8 +155,16 @@ void AndroidTextToSpeechManager::updateVoices(JNIEnv *env, jobject obj, jobjectA
 		jsize *idx_p = new jsize;
 		*idx_p = i;
 
-		// Android doesn't provide any gender/age information on voices
-		Common::TTSVoice voice(Common::TTSVoice::UNKNOWN_GENDER, Common::TTSVoice::UNKNOWN_AGE, idx_p, name);
+		assert(name[0] != '\0');
+		Common::TTSVoice::Gender gender = Common::TTSVoice::UNKNOWN_GENDER;
+		if (name[0] == '0') {
+			gender = Common::TTSVoice::MALE;
+		} else if (name[0] == '1') {
+			gender = Common::TTSVoice::FEMALE;
+		}
+
+		debug("Got voice %s with gender %d", name + 1, gender);
+		Common::TTSVoice voice(gender, Common::TTSVoice::UNKNOWN_AGE, idx_p, name + 1);
 		tts->_ttsState->_availableVoices.push_back(voice);
 
 		if (name == currentVoice)
