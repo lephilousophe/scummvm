@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
+import android.util.Log;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -156,6 +157,7 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 			long start = System.nanoTime();
 			_classifier = TextToSpeechClassifier.make(_context, _voices, (voices, genders) -> {
 				long end = System.nanoTime();
+				Log.d(ScummVM.LOG_TAG, "TTS: MEASURE " + (end - start));
 				String[] voicesNames = new String[voices.length];
 				for (int i = 0; i < voices.length; i++) {
 					voicesNames[i] = genders[i] + voices[i].getName();
@@ -261,21 +263,27 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 			return false;
 		}
 
+		Log.d(ScummVM.LOG_TAG, "TTS: will say " + " text: " + text + " action: " + action);
 		synchronized (_queue) {
 			Utterance currentUtterance = _currentUtterance.get();
 			if (currentUtterance != null || !_queue.isEmpty()) {
+				Log.d(ScummVM.LOG_TAG, "TTS: QUEUE NOT EMPTY APPLYING ACTION: " + action);
 				if (action == ACTION_DROP) {
+					Log.d(ScummVM.LOG_TAG, "TTS: DROP");
 					return true;
 				}
 				if (action == ACTION_INTERRUPT) {
+					Log.d(ScummVM.LOG_TAG, "TTS: STOPPING AND PUSHING");
 					_queue.clear();
 					_tts.stop();
 				} else if (action == ACTION_INTERRUPT_NO_REPEAT) {
 					_queue.clear();
 					if (currentUtterance != null && currentUtterance.match(text)) {
+						Log.d(ScummVM.LOG_TAG, "TTS: STOPPING AND THAT'S IT");
 						// Current text matches: stop after it
 						return true;
 					} else {
+						Log.d(ScummVM.LOG_TAG, "TTS: STOPPING AND PUSHING NO REPEAT");
 						_tts.stop();
 					}
 				} else if (action == ACTION_QUEUE_NO_REPEAT) {
@@ -284,6 +292,7 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 						bottom = currentUtterance;
 					}
 					if (bottom != null && bottom.match(text)) {
+						Log.d(ScummVM.LOG_TAG, "TTS: NO REPEAT");
 						return true;
 					}
 				}
@@ -296,6 +305,7 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 			utterance.volume = volume / 100.f;
 			utterance.activeVoice = activeVoice;
 			_queue.add(utterance);
+			Log.d(ScummVM.LOG_TAG, "TTS: pushing " + utterance.id + " text: " + utterance.text);
 		}
 
 		if (_state.get() == STATE_READY) {
@@ -316,6 +326,7 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 
 		Utterance utterance;
 		synchronized (_queue) {
+			Log.d(ScummVM.LOG_TAG, "TTS: SNS QUEUE SIZE " + _queue.size());
 			utterance = _queue.pollFirst();
 		}
 		if (utterance == null) {
@@ -332,6 +343,7 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 		}
 
 		_tts.setSpeechRate(utterance.speechRate);
+		Log.d(ScummVM.LOG_TAG, "TTS: Use pitch " + utterance.pitch);
 		_tts.setPitch(utterance.pitch);
 
 		speak(utterance);
@@ -375,7 +387,8 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 	// UtteranceProgressListener API
 	@Override
 	public void onStart(String utteranceId) {
-		//Log.d(ScummVM.LOG_TAG, "TTS: onStart " + utteranceId);
+		Log.d(ScummVM.LOG_TAG, "TTS: onStart " + utteranceId);
+		Log.d(ScummVM.LOG_TAG, "TTS: QUEUE SIZE " + _queue.size() + " CURRENT " + _currentUtterance.get());
 		// Nothing to do
 		Utterance utterance = _currentUtterance.get();
 		assert(utterance != null && utterance.id.equals(utteranceId));
@@ -383,7 +396,8 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 
 	@Override
 	public void onDone(String utteranceId) {
-		//Log.d(ScummVM.LOG_TAG, "TTS: onDone " + utteranceId);
+		Log.d(ScummVM.LOG_TAG, "TTS: onDone " + utteranceId);
+		Log.d(ScummVM.LOG_TAG, "TTS: QUEUE SIZE " + _queue.size());
 		Utterance utterance = _currentUtterance.get();
 		assert(utterance.id.equals(utteranceId));
 		boolean reset = _currentUtterance.compareAndSet(utterance, null);
@@ -394,14 +408,14 @@ public class TextToSpeechManager extends UtteranceProgressListener implements Te
 	@SuppressWarnings({"deprecation", "RedundantSuppression"})
 	@Override
 	public void onError(String utteranceId) {
-		//Log.d(ScummVM.LOG_TAG, "TTS: onError " + utteranceId);
+		Log.d(ScummVM.LOG_TAG, "TTS: onError " + utteranceId);
 		onDone(utteranceId);
 	}
 
 	@RequiresApi(api = android.os.Build.VERSION_CODES.M)
 	@Override
 	public void onStop(String utteranceId, boolean interrupted) {
-		//Log.d(ScummVM.LOG_TAG, "TTS: onStop " + utteranceId + " " + interrupted);
+		Log.d(ScummVM.LOG_TAG, "TTS: onStop " + utteranceId + " " + interrupted);
 		// On Android M and above, onStop is called instead of onDone if it has been stopped
 		onDone(utteranceId);
 	}
