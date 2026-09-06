@@ -111,7 +111,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
       - name: Install vcpkg packages
         run: |
-          vcpkg install
+          vcpkg --debug install
       - name: Save vcpkg cache
         uses: actions/cache/save@v4
         with:
